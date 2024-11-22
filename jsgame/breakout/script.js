@@ -51,6 +51,11 @@ let rightPressed = false;
 let leftPressed = false;
 let escapePressed = false;
 
+let isPose = false;
+
+//stack用のArray
+const stack = [];
+
 // bricks配列を定義、二次元配列、bricks[c][r]に入っている各要素がオブジェクト
 const bricks = [];
 for (let c = 0; c < brickColumnCount; c++) {
@@ -146,7 +151,7 @@ function keyDownHandler(e) {
 	} else if (e.key === "Left" || e.key === "ArrowLeft") {
 		leftPressed = true;
 	}
-	// 追記、エスケープでアラート疑似的にポーズ
+	// 追記、エスケープで疑似的にポーズ
 	else if (e.key === "Escape") {
 		escapePressed = true;
 	}
@@ -160,9 +165,11 @@ function keyUpHandler(e) {
 	} else if (e.key === "Left" || e.key === "ArrowLeft") {
 		leftPressed = false;
 	}
-	// 追記、エスケープでアラート疑似的にポーズ
+
+	// 追記、エスケープで疑似的にポーズ
 	else if (e.key === "Escape") {
 		escapePressed = false;
+		pose();
 	}
 }
 
@@ -206,6 +213,23 @@ function collisionDetection() {
 				}
 			}
 		}
+	}
+}
+
+function pose() {
+	// ゴリ押し実装ポーズ
+	if (isPose) {
+		isPose = false;
+		// ボールを動かす
+		dy = stack.pop();
+		dx = stack.pop();
+	} else {
+		isPose = true;
+		// ボールを止める
+		stack.push(dx);
+		stack.push(dy);
+		dx = 0;
+		dy = 0;
 	}
 }
 
@@ -260,6 +284,23 @@ function draw() {
 		paddleX = Math.min(paddleX + paddleSpeed, canvas.width - paddleWidth);
 	} else if (leftPressed) {
 		paddleX = Math.max(paddleX - paddleSpeed, 0);
+	}
+
+	//エスケープ押されているか表示 debug用
+	if (escapePressed) {
+		ctx.beginPath();
+		ctx.rect(10, 10, 10, 10);
+		ctx.fillStyle = "#00ff00";
+		ctx.fill();
+		ctx.closePath();
+	}
+	//ポーズ状態のときの表示
+	if (isPose) {
+		ctx.font = "16px Arial";
+		ctx.fillStyle = mainColor;
+		ctx.textAlign = "center";
+		ctx.fillText(`Pose`, canvas.width/2, canvas.height/2);
+		ctx.textAlign = "left";
 	}
 
 	// （次に表示する）座標を更新
